@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../Home_Screen/persentation/Home.dart';
+import '../Poll_Screen/Persentation/poll.dart';
+
 class Auth {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -74,6 +77,11 @@ class Auth {
       BuildContext context,
       ) async {
     final message = await signInWithEmail(email, password);
+    if(message=="Signed in successfully"){
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>Home()),
+      );    }
     if (!context.mounted) return;
     showSnackBar(context, message);
   }

@@ -1,3 +1,5 @@
+import 'package:fire_base/features/Home_Screen/persentation/Home.dart';
+import 'package:fire_base/features/Pages/Sign%20in.dart';
 import 'package:fire_base/features/Poll_Screen/Persentation/poll.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,6 +17,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: Poll());
+    return MaterialApp(debugShowCheckedModeBanner: false, home: Signin());
   }
 }

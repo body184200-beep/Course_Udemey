@@ -1,5 +1,7 @@
 import 'package:fire_base/core/App_Colors/Colors.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../Poll_Screen/Persentation/poll.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -9,6 +11,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+final String _currentUserId = FirebaseAuth.instance.currentUser!.uid;
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -48,7 +51,12 @@ class _HomeState extends State<Home> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Poll(currentUserId: _currentUserId,)),
+            );
+          },
           child: Icon(Icons.add, color: AppColors.black),
         ),
       ),

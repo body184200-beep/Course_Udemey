@@ -23,6 +23,7 @@ class _SignUpState extends State<SignUp> {
 
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -31,6 +32,53 @@ class _SignUpState extends State<SignUp> {
     passController.dispose();
     confirmPassController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignUp() async {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final message = await Auth.signUpWithEmail(
+        emailController.text.trim(),
+        passController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      CustomSnackBar.showSnackBar(
+        context,
+        message,
+        message == "Signed up successfully"
+            ? SnackBarState.success
+            : SnackBarState.error,
+      );
+
+      if (message == "Signed up successfully" && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Signin()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      CustomSnackBar.showSnackBar(
+        context,
+        "Something went wrong. Please try again.",
+        SnackBarState.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -103,6 +151,18 @@ class _SignUpState extends State<SignUp> {
                     hint: "Enter password",
                     obscureText: obscurePassword,
                     prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscurePassword = !obscurePassword;
+                        });
+                      },
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Password is required";
@@ -122,6 +182,18 @@ class _SignUpState extends State<SignUp> {
                     hint: "Re-enter password",
                     obscureText: obscureConfirmPassword,
                     prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscureConfirmPassword = !obscureConfirmPassword;
+                        });
+                      },
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Please confirm your password";
@@ -139,35 +211,28 @@ class _SignUpState extends State<SignUp> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        if (!(_formKey.currentState?.validate() ?? false)) {
-                          return;
-                        }
-
-                        final message = await Auth.signUpWithEmail(
-                          emailController.text.trim(),
-                          passController.text.trim(),
-                        );
-
-                        if (!context.mounted) return;
-
-                        CustomSnackBar.showSnackBar(
-                          context,
-                          message,
-                          message == "Signed up successfully"
-                              ? SnackBarState.success
-                              : SnackBarState.error,
-                        );
-                      },
+                      onPressed: isLoading ? null : _handleSignUp,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: isLoading
+                          ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.blue,
+                        ),
+                      )
+                          : const Text(
                         "Sign Up",
-                        style: TextStyle(color: AppColors.blue, fontSize: 18),
+                        style: TextStyle(
+                          color: AppColors.blue,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -178,7 +243,7 @@ class _SignUpState extends State<SignUp> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: isLoading ? null : () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.black,
                         shape: RoundedRectangleBorder(
@@ -186,7 +251,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                       icon: const Icon(
-                        FontAwesomeIcons.google ,
+                        FontAwesomeIcons.google,
                         color: AppColors.blue,
                         size: 20,
                       ),
@@ -204,10 +269,14 @@ class _SignUpState extends State<SignUp> {
                     children: [
                       const Text("Already have an account?"),
                       TextButton(
-                        onPressed: () {
+                        onPressed: isLoading
+                            ? null
+                            : () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Signin()),
+                            MaterialPageRoute(
+                              builder: (context) => Signin(),
+                            ),
                           );
                         },
                         child: const Text(

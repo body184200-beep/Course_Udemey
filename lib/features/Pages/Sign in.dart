@@ -20,11 +20,37 @@ class _SigninState extends State<Signin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
 
+  bool isLoading = false;
+
   @override
   void dispose() {
     emailController.dispose();
     passController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignIn() async {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await Auth.signInHandling(
+        emailController.text.trim(),
+        passController.text.trim(),
+        context,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -65,8 +91,7 @@ class _SigninState extends State<Signin> {
                     title: "Email",
                     hint: "Enter your email",
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: Icon(Icons.email),
-
+                    prefixIcon: const Icon(Icons.email),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Email is required";
@@ -87,8 +112,7 @@ class _SigninState extends State<Signin> {
                     title: "Password",
                     hint: "Enter password",
                     obscureText: true,
-                    prefixIcon: Icon(Icons.lock),
-
+                    prefixIcon: const Icon(Icons.lock),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Password is required";
@@ -106,7 +130,9 @@ class _SigninState extends State<Signin> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {
+                      onPressed: isLoading
+                          ? null
+                          : () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -123,31 +149,32 @@ class _SigninState extends State<Signin> {
 
                   const SizedBox(height: 20),
 
-                  const SizedBox(height: 20),
-
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        if (!_formKey.currentState!.validate()) {
-                          return;
-                        }
-                        await Auth.signInHandling(
-                          emailController.text.trim(),
-                          passController.text.trim(),
-                          context,
-                        );
-                      },
+                      onPressed: isLoading ? null : _handleSignIn,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: isLoading
+                          ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.blue,
+                        ),
+                      )
+                          : const Text(
                         "Sign In",
-                        style: TextStyle(color: AppColors.blue, fontSize: 18),
+                        style: TextStyle(
+                          color: AppColors.blue,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -159,7 +186,9 @@ class _SigninState extends State<Signin> {
                     children: [
                       const Text("Don't have an account?"),
                       TextButton(
-                        onPressed: () {
+                        onPressed: isLoading
+                            ? null
+                            : () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(

@@ -16,10 +16,43 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
 
+  bool isLoading = false;
+
   @override
   void dispose() {
     emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSendCode() async {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final String message = await Auth.forgotPassword(
+        emailController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Auth.showSnackBar(context, message);
+    } catch (e) {
+      if (!mounted) return;
+      Auth.showSnackBar(
+        context,
+        "Something went wrong. Please try again.",
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -75,7 +108,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     title: "Email",
                     hint: "Enter your email",
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email),
 
                     validator: (value){
                       if(value == null || value.isEmpty){
@@ -97,17 +130,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     height: 55,
 
                     child: ElevatedButton(
-                      onPressed: () async {
-                        if (!_formKey.currentState!.validate()) {
-                          return;
-                        }
-
-                        String message = await Auth.forgotPassword(
-                          emailController.text.trim(),
-                        );
-
-                        Auth.showSnackBar(context, message);
-                      },
+                      onPressed: isLoading ? null : _handleSendCode,
 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.black,
@@ -117,10 +140,21 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         ),
                       ),
 
-                      child: const Text(
+                      child: isLoading
+                          ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.red,
+                        ),
+                      )
+                          : const Text(
                         "Send Code",
-
-                        style: TextStyle(color: AppColors.red, fontSize: 18),
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -128,7 +162,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   const SizedBox(height: 20),
 
                   TextButton(
-                    onPressed: () {
+                    onPressed: isLoading
+                        ? null
+                        : () {
                       Navigator.pop(context);
                     },
 
