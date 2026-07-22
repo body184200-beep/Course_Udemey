@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../Home_Screen/persentation/Home.dart';
-import '../Poll_Screen/Persentation/poll.dart';
 
 class Auth {
   static final FirebaseAuth _auth = FirebaseAuth.instance;

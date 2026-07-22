@@ -1,9 +1,6 @@
-import 'package:fire_base/features/Home_Screen/persentation/Home.dart';
 import 'package:fire_base/features/Pages/Sign%20in.dart';
-import 'package:fire_base/features/Poll_Screen/Persentation/poll.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'features/Pages/Sign up.dart';
 import 'firebase_options.dart';
 
 void main() async {

@@ -250,7 +250,7 @@ class _SignUpState extends State<SignUp> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      icon: const Icon(
+                      icon: const FaIcon(
                         FontAwesomeIcons.google,
                         color: AppColors.blue,
                         size: 20,

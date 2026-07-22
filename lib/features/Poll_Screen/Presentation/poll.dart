@@ -12,6 +12,7 @@ class Poll extends StatefulWidget {
 
   const Poll({super.key, required this.currentUserId});
 
+
   @override
   State<Poll> createState() => _PollState();
 }
@@ -172,7 +173,7 @@ class _PollState extends State<Poll> {
       final List<Map<String, dynamic>> pollOptionsData = [];
 
       for (int i = 0; i < optionsController.length; i++) {
-        final imageUrl = await uploadImage(options[i]!, pollId, i);
+        final imageUrl = await uploadImage(options[i]!, userId, i);
         if (imageUrl == null) {
           throw Exception("Error uploading image for option ${i + 1}");
         }
@@ -232,15 +233,28 @@ class _PollState extends State<Poll> {
     return true;
   }
 
-  Future<String?> uploadImage(File imageFile, String pollId, int index) async {
+  Future<String?> uploadImage(File imageFile, String userId, int index) async {
     try {
-      final storageRef = FirebaseStorage.instance.ref().child(
-        'polls/$pollId/$index$pollId.jpg',
-      );
-      final uploadTask = await storageRef.putFile(imageFile);
-      return await uploadTask.ref.getDownloadURL();
+      if (!await imageFile.exists()) {
+        log("Error: Local image file does not exist at ${imageFile.path}");
+        return null;
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('poll_images/$userId/${timestamp}_$index.jpg');
+
+      final uploadTask = storageRef.putFile(imageFile);
+      final TaskSnapshot snapshot = await uploadTask;
+
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } on FirebaseException catch (e) {
+      log("Firebase Storage error [Code: ${e.code}]: ${e.message}");
+      return null;
     } catch (e) {
-      log("Error uploading image: $e");
+      log("Unexpected error uploading image: $e");
       return null;
     }
   }
